@@ -8,8 +8,7 @@ import logging
 import json
 import os
 
-VERSION = "3.0"
-DEBUG = True
+__version__ = "1.0"
 
 # Global vars taken from environment variables
 API_BASE = ""
@@ -80,7 +79,7 @@ def build_speechlet_response(title, output, reprompt_text, should_end_session):
 
 def build_response(session_attributes, speechlet_response):
     return {
-        'version': VERSION,
+        'version': __version__,
         'sessionAttributes': session_attributes,
         'response': speechlet_response
     }
@@ -187,8 +186,7 @@ def return_total_mon_spend(intent, session):
             member = r["members"][i]
             value = member["values"][0]
             val = value["value"]
-            if DEBUG:
-                logging.debug("value = " + str(val))
+            logging.debug("value = %d", val)
             total_spend = total_spend + val
 
         # Create response
@@ -281,9 +279,8 @@ def lambda_handler(event, context):
     # Get session ID
     global TOKEN
     TOKEN = create_ns_session(API_BASE, USER, PASSWORD, event['session'])
-    if DEBUG:
-        logging.debug("create_ns_session: token = ", TOKEN)
-        logging.debug("create_ns_session: api_base = ", API_BASE)
+    logging.debug("create_ns_session: token = %s", TOKEN)
+    logging.debug("create_ns_session: api_base = %s", API_BASE)
 
     # Select the appropriate event handler
     if event['session']['new']:
@@ -304,11 +301,14 @@ if __name__ == "__main__":
     event = json.load(open('event.json'))
     cred = json.load(open('cred.json'))
 
+    # set logging level
+    logging.basicConfig(level=logging.INFO)
+
     # unit test harness
     os.environ['api_base'] = cred["api_base"]
     os.environ['skill_id'] = "foobar"
     os.environ['user'] = cred["userName"]
     os.environ['password'] = cred["password"]
     context = ""
-    print(os.environ)
-    print(lambda_handler(event, context))
+    logging.info(os.environ)
+    logging.info(lambda_handler(event, context))
